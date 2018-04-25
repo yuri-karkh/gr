@@ -1,0 +1,8 @@
+# IDE settings
+.vscode
+
+# Vendors dependencies
+vendor
+
+# Builds
+*.exe

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" name="viewport">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+<body>
+    {{ template "header.html" .}}
+
+    <h1>Articles</h1>
+    {{ range .payload }}
+        <a href="/article/view/{{.ID}}">{{ .Title }}</a>
+        <p>{{ .Content }}</p>
+    {{ end }}
+
+    {{ template "footer.html" .}}
+</body>
+</html>
