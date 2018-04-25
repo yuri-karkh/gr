@@ -1,1 +1,2 @@
-GR project
+# Gentle Reader API
+## Used technologies stack   
