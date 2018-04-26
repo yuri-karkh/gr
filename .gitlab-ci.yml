@@ -38,4 +38,4 @@ deploy_prod:
 		url: https://go.gentlereader.com
 		when: manual
 	only:
-		- master
+		- tag
