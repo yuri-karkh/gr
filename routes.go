@@ -1,16 +1,10 @@
 package main
 
-func initializeRoutes(){
-	router.GET( "/", showIndexPage )
-	
-	router.GET( "/article/view/:id", viewArticle )
-
-	userRoutes := router.Group( "/v1/user" )
+func initializeRoutes() {
+	v1 := env.router.Group("/v1")
 	{
-		userRoutes.GET( "/register", ensureNotLoggedIn(), showRegistrationPage )
-		userRoutes.POST( "/register", ensureNotLoggedIn(), register )
-		userRoutes.GET( "/login", ensureNotLoggedIn(), showLoginPage )
-		userRoutes.POST( "/login", ensureNotLoggedIn(), performLogin )
-		userRoutes.GET( "/logout", ensureLoggedIn(), logout )
+		v1.POST("/user/register", userRegisterAction)
+		v1.POST("/user/login", userLoginAction)
+		v1.GET("/user/logout", userLogoutAction)
 	}
 }

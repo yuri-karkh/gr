@@ -1,19 +1,20 @@
 package main
 
 import (
-	"math/rand"
-    "net/http"
-    "strconv"
-	"github.com/gin-gonic/gin" 
+	"strings"
+	//	"math/rand"
+	"net/http"
+	//    "strconv"
+	"github.com/gin-gonic/gin"
 )
 
-func generateSessionToken() string {
+/*func generateSessionToken() string {
 	return strconv.FormatInt( rand.Int63(), 16 )
 }
 
 func showRegistrationPage( c *gin.Context ){
-	render( 
-		c, 
+	render(
+		c,
 		gin.H {
 			"title" : "Register",
 		},
@@ -68,10 +69,10 @@ func performLogin( c *gin.Context ){
         c.SetCookie( "token", token, 3600, "", "", false, true )
 
 		render(
-			c, 
+			c,
 			gin.H {
 				"title": "Successful Login",
-			}, 
+			},
 			"login-success.html",
 		)
 	} else {
@@ -89,4 +90,66 @@ func performLogin( c *gin.Context ){
 func logout( c *gin.Context ){
 	c.SetCookie( "token", "", -1, "", "", false, true )
     c.Redirect( http.StatusTemporaryRedirect, "/" )
+}*/
+
+func userRegisterAction(c *gin.Context) {
+	type Login struct {
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	var json Login
+
+	if c.BindJSON(&json) == nil {
+		if user, err := createUser(env.db, json.Email, json.Password); err == nil {
+			c.JSON(http.StatusCreated, gin.H{
+				"user": user,
+			})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+		}
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Bad request",
+		})
+	}
+}
+
+func userLoginAction(c *gin.Context) {
+	type Login struct {
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	var json Login
+
+	if c.BindJSON(&json) == nil {
+		if user, err := loginUser(env.db, json.Email, json.Password); err == nil {
+			c.JSON(http.StatusOK, gin.H{
+				"user": user,
+			})
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": err.Error(),
+			})
+		}
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Bad request",
+		})
+	}
+}
+
+func userLogoutAction(c *gin.Context) {
+	token := strings.Replace(c.Request.Header.Get("Authorization"), "token=", "", 1)
+	status := logoutUser(env.db, token)
+	if !status {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Something went wrong",
+		})
+	}
+
+	c.Writer.WriteHeader(http.StatusOK)
 }

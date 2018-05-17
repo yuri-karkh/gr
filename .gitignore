@@ -6,3 +6,6 @@ vendor
 
 # Builds
 *.exe
+
+# Helper commands
+*.cmd

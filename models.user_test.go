@@ -4,74 +4,63 @@ import (
 	"testing"
 )
 
-func TestUsernameAvailability( t *testing.T ){
-	saveLists()
+/*func TestCheckUserEmailIsAvailable(t *testing.T) {
+	mdb := &mockDatabase{}
 
-	if !isUsernameAvailable( "newuser" ) {
+	emailAvailable := mdb.CheckUserEmailIsAvailable("exists@gentlereader.com")
+	if emailAvailable {
 		t.Fail()
 	}
 
-	if isUsernameAvailable( "user1" ){
+	emailAvailable = mdb.CheckUserEmailIsAvailable("notexists@gentlereader.com")
+	if !emailAvailable {
+		t.Fail()
+	}
+}*/
+
+func TestCreateUser(t *testing.T) {
+	mdb := &mockDatabase{}
+
+	user, err := createUser(mdb, "exists@gentlereader.com", "test")
+	if user.ID != 0 || err == nil {
 		t.Fail()
 	}
 
-	registerUser( "newuser", "newpass" )
-
-	if isUsernameAvailable( "newuser" ){
+	user, err = createUser(mdb, "user1@gentlereader.com", "test")
+	if user.ID != 1 || err != nil {
 		t.Fail()
 	}
 
-	restoreLists()
+	user, err = createUser(mdb, "user2@gentlereader.com", "test")
+	if user.ID != 0 || err == nil {
+		t.Fail()
+	}
 }
 
-func TestValidUserRegistration( t *testing.T ){
-	saveLists()
+func TestLoginUser(t *testing.T) {
+	mdb := &mockDatabase{}
 
-	u, err := registerUser( "newuser", "newpass" )
-
-	if err != nil || u.Username == "" {
+	user, err := loginUser(mdb, "notexists@gentlereader.com", "test")
+	if user.ID != 0 || err == nil {
 		t.Fail()
 	}
 
-	restoreLists()
+	user, err = loginUser(mdb, "exists@gentlereader.com", "test")
+	if user.ID != 1 || err != nil {
+		t.Fail()
+	}
 }
 
-func TestInvalidUserRegistration( t *testing.T ){
-	saveLists()
+func TestLogoutUser(t *testing.T) {
+	mdb := &mockDatabase{}
 
-	u, err := registerUser( "user1", "pass1" )
-
-	if err == nil || u != nil {
+	status := logoutUser(mdb, "invalid")
+	if status {
 		t.Fail()
 	}
 
-	u, err = registerUser( "newuser", "" )
-
-	if err == nil || u != nil {
+	status = logoutUser(mdb, "valid")
+	if !status {
 		t.Fail()
 	}
-
-	restoreLists()
-}
-
-func TestUserValidity( t *testing.T ){
-	if !isUserValid( "user1", "pass1" ) {
-        t.Fail()
-    }
-
-    if isUserValid( "user2", "pass1" ) {
-        t.Fail()
-    }
-
-    if isUserValid( "user1", "" ) {
-        t.Fail()
-    }
-
-    if isUserValid( "", "pass1" ) {
-        t.Fail()
-    }
-
-    if isUserValid( "User1", "pass1" ) {
-        t.Fail()
-    }
 }

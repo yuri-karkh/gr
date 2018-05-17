@@ -2,47 +2,52 @@ package main
 
 import (
 	"errors"
-	"strings"
 )
 
-type user struct {
-	Username string `json:"username"`
-	Password string `json:"-"`
+// User entity
+type User struct {
+	ID       uint   `gorm:"primary_key;AUTO_INCREMENT"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Token    string `json:"token"`
 }
 
-var userList = []user {
-	user { Username : "user1", Password : "pass1" },
-	user { Username : "user2", Password : "pass2" },
-	user { Username : "user3", Password : "pass3" },
-}
-
-func registerUser( username string, password string ) ( *user, error ) {
-	if strings.TrimSpace( password ) == "" {
-		return nil, errors.New( "Password can't be empty" )
-	} else if !isUsernameAvailable( username ) {
-		return nil, errors.New( "Username is not available" )
+// createUser method allows to create a new user
+func createUser(db DataAccessLayer, email string, password string) (User, error) {
+	// Lets chek is user email address is available
+	if !db.CheckUserEmailIsAvailable(email) {
+		return User{}, errors.New("Email address already in use")
 	}
 
-	user := user{ Username : username, Password : password }
-	userList = append( userList, user )
-
-	return &user, nil
-}
-
-func isUserValid( username string, password string ) bool {
-    for _, user := range userList {
-        if user.Username == username && user.Password == password {
-            return true
-        }
-    }
-    return false
-}
-
-func isUsernameAvailable( username string ) bool {
-	for _, user := range userList {
-		if user.Username == username {
-			return false
-		}
+	// Init user struct
+	user := User{
+		Email:    email,
+		Password: password,
 	}
-	return true
+
+	// Try to create user
+	db.CreateNewUser(&user)
+
+	// If user was not created lets return error
+	if user.ID == 0 {
+		return User{}, errors.New("User was not created")
+	}
+
+	return user, nil
+}
+
+// loginUser method allows to login user
+func loginUser(db DataAccessLayer, email string, password string) (User, error) {
+	user, err := db.UserLogin(email, password)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+// logoutUser method allows to reset user auth token
+func logoutUser(db DataAccessLayer, token string) bool {
+	return db.UserLogout(token)
 }

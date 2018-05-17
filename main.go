@@ -1,29 +1,42 @@
-package main 
+package main
 
-import ( 
-	"net/http"
+import (
 	"os"
-	"github.com/gin-gonic/gin" 
-) 
 
-var router *gin.Engine 
+	"github.com/gin-gonic/gin"
+)
 
-func main() { 
-	os.Setenv( "PORT", "9000" )
-	// Set the router as the default one provided by Gin 
-	router = gin.Default() 
-	// Process the templates at the start so that they don't have to be loaded 
-	// from the disk again. This makes serving HTML pages very fast.
-	router.LoadHTMLGlob( "templates/admin/*" ) 
-	
-	// Init routes
-	initializeRoutes()
-	
-	// Start serving the application 
-	router.Run() 
+//var db *gorm.DB
+//var router *gin.Engine
+
+// Env is a structure that keeps app global environment handlers
+type Env struct {
+	db     DataAccessLayer
+	router *gin.Engine
 }
 
-func render( c *gin.Context, data gin.H, templateName string ){
+var env Env
+
+func main() {
+	// Lets set port hardly for now
+	os.Setenv("PORT", "9000")
+
+	// Init database connection
+	db := NewDB("root:qwas1234@/gr?charset=utf8&parseTime=True&loc=Local")
+	defer db.Close()
+
+	// Set database and router for current application environement
+	env.db = db
+	env.router = gin.Default()
+
+	// Init routes
+	initializeRoutes()
+
+	// Start serving the application
+	env.router.Run()
+}
+
+/*func render( c *gin.Context, data gin.H, templateName string ){
 	switch c.Request.Header.Get("Accept") {
 		case "application/json":
 			c.JSON( http.StatusOK, data["payload"] )
@@ -32,4 +45,4 @@ func render( c *gin.Context, data gin.H, templateName string ){
 		default:
 			c.HTML( http.StatusOK, templateName, data )
 	}
-}
+}*/
